@@ -256,12 +256,17 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-53-57.png" style="width:50px;height:50px;"/></td>
-        <td>Hash match/aggregate</td>
+        <td>
+        
+[Hash match/aggregate](####-hash-match)      
+        </td>
         <td>Builds a hash table from its first input, then uses that hash table to either join to its second input, or produce aggregated values</td>
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-54-32.png" style="width:50px;height:50px;"/></td>
-        <td>Merge join</td>
+        <td>
+[Merge join](####-merge-join)
+        </td>
         <td>Joins two inputs that are ordered by the join key(s), exploiting the known sort order for optimal processing efficiency</td>
     </tr>
     <tr>
@@ -271,7 +276,10 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-55-55.png" style="width:50px;height:50px;"/></td>
-        <td>Nested loop</td>
+        <td>
+
+[Nested loop](####-nested-loop)
+        </td>
         <td>Joins two inputs by repeatedly executing the second input for each row in the first input</td>
     </tr>
 </table>
@@ -290,13 +298,17 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-20.png" style="width:50px;height:50px;"/></td>
-        <td>Repartition streams</td>
-    </tr>
+        <td>
+        
+[Repartition streams](####-making-sense-of-parallel-scan)</td>
+        </tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-50.png" style="width:50px;height:50px;"/></td>
         <td>Gather streams</td>
     </tr>
 </table>
+
+---
 
 #### Nested loop
 [Source](https://bertwagner.com/posts/visualizing-nested-loops-joins-and-understanding-their-implications/)
