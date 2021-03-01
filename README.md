@@ -112,7 +112,7 @@ To create the histogram, SQL server split the data into different buckets (calle
 
 The maximum number of bucket is 200, this can cause problems for larger set of data, where there can be points of _skewed data distributions_, leading to un-optimized plans for special ranges
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
 For example, customer A usually makes 5 purchases per week, but suddenly, at a special day (like Black Friday), he made over 10000 transactions, that huge spike might not get captured in the transaction bucket, and the query for that week would likely get much slower than normal as the optimizer'd still think he makes 
 very little purchases in that week
@@ -163,11 +163,11 @@ _Histogram cannot be used when we're using paramater_, it then falls back to Den
 - This memory is used to store temporary rows for sort, hash join & [parallelism exchange operators](###-parallelism-operators)
 - SQL Server calculates this based on statistics, lack of available memory grant causes a tempdb spill ([tempDB](https://docs.microsoft.com/en-us/sql/relational-databases/databases/tempdb-database?view=sql-server-ver15) is a global resource that is used to stores all temporary objects)
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
 In SQL server 2012+, a yellow warning icon is displayed in plan explorer when the processor detects a spill (not enough RAM to store data)
 
-For SQL server 2008R2, check the “sort warnings” event in [SQL profiler](https://www.sqlshack.com/an-overview-of-the-sql-server-profiler/) to detect memory spill
+For SQL server 2008R2, check the “sort warnings” event in <a href="https://www.sqlshack.com/an-overview-of-the-sql-server-profiler/">SQL profiler</a> to detect memory spil
 
 </blockquote>
 
@@ -340,12 +340,14 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </span>
 </div>
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
-(*) SQL Server can use multiple ways to optimize a nested loop (to get Big O of _nlog(m)_ time complexity)
-- [Spool](https://sqlserverfast.com/epr/table-spool/#:~:text=The%20Table%20Spool%20operator%20is,operators%20to%20produce%20them%20again.) in inner loop to maximize reusability
-- Perform index seek on inner loop
-- [Prefetch data in inner loop](#####-nested-loop-prefetching)
+(*) SQL Server can use multiple ways to optimize a nested loop (to get Big O of <i>nlog(m)</i> time complexity)
+<ul>
+    <li><a href="https://sqlserverfast.com/epr/table-spool/#:~:text=The%20Table%20Spool%20operator%20is,operators%20to%20produce%20them%20again.">Spool</a> in inner loop to maximize reusability</li>
+    <li>Perform index seek on inner loop</li>
+    <li>Prefetch data in inner loop</li>
+</ul>
 
 (**) Order inner loop implicitly to create Semi-blocking nested loop
 
@@ -358,9 +360,9 @@ Example plan:
 
 Scans `IX_agent` index, for each agent, seek the corresponding customer __asynchronously__ from `IX_custid`, forward the result whenever it's available
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
-When `WithUnorderedPrefetch` is set to False, the seeked result will be forwarded only when the previous ordered key is fetched & forwarded
+When <code>WithUnorderedPrefetch</code> is set to False, the seeked result will be forwarded only when the previous ordered key is fetched & forwarded
 
 </blockquote>
 
@@ -375,12 +377,14 @@ Example plan:
 2. May implicitly perform an (partial) "_order by_" to create less random seeks; hence the high memory usage
 3. If memory does not fit, it’ll fill what it can, so it does not spill
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
-- Although getting just 10 rows, the above plan still requires 189,312 KB of sorting space
-- Concurrent runs of above query cause high _RESOURCE_SEMAPHORE_ wait, leading to slower performance (fixed in 2016)
-- The sort method & memory grant algorithm is different to a normal sort operator, there’s no guarantee that it is faster than same query without optimization
-- This is treated as a “safety net” in case the statistics are out-of-date
+<ul>
+    <li>Although getting just 10 rows, the above plan still requires 189,312 KB of sorting space</li>
+    <li>Concurrent runs of above query cause high _RESOURCE_SEMAPHORE_ wait, leading to slower performance (fixed in 2016)</li>
+    <li>The sort method & memory grant algorithm is different to a normal sort operator, there’s no guarantee that it is faster than same query without optimization</li>
+    <li>This is treated as a “safety net” in case the statistics are out-of-date</li>
+</ul>
 
 </blockquote>
 
@@ -478,16 +482,20 @@ Here's a summary (_note that `mod % 2` & `mod % 10` are not actual MS hash funct
 
 <img src="img/2021-03-01-16-40-37.png" style="background:white"/>
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
 
-__Types of scan:__
+<b>Types of scan:</b>
 
-__Unordered scan__ (Allocation Order Scan) using using internal page allocation information
-- Favorable for _Hash match_
+<b>Unordered scan</b> (Allocation Order Scan) using using internal page allocation information
+<ul>
+    <li>Favorable for <i>Hash match</i></li>
+</ul>
 
-__Ordered scan__, the engine will scan the index structure
-- Favorable for _Merge join_
-- _During order-preserving re-partition exchange, it does not do any sorting_, it just keep the order of output stream the same as the input stream
+<b>Ordered scan</b>, the engine will scan the index structure
+<ul>
+    <li>Favorable for <i>Merge join</i></li>
+    <li><i>During order-preserving re-partition exchange, it does not do any sorting</i>, it just keep the order of output stream the same as the input stream</li>
+</ul>
 
 </blockquote>
 
@@ -521,7 +529,7 @@ Merge join plan is evaludated by adding a where clause filter by date, the optim
 
 Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost comprared to the _hash join_ one
 
-<blockquote style="font-size:80%">
+<blockquote style="font-size:85%">
     We can keep track of these symptoms by monitoring the CXPACKET & SLEEP_TASK wait types (for SQL Server 2008)
 </blockquote>
 
