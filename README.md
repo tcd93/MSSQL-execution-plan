@@ -1,6 +1,8 @@
 # MSSQL Plan Optimizer
 An article is an introduction to Microsoft SQL Server's plan optimizer & common operators, and provide an more in-depth view & analysis of slow queries (with example)
 
+Link: https://tcd93.github.io/MSSQL-execution-plan/
+
 __*Disclaimer: as MSSQL is a closed-source database, I can not prove that this article is 100% correct, all is based on articles online (which I'll include links) and my own experience, so take it with a grain of salt & happy reading!*__
 
 Note: I don't provide sample data here as it's private & pretty huge, but even if you don't run these data yourself, you should have a pretty good grasp of 
