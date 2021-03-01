@@ -1,8 +1,10 @@
 # MSSQL Plan Optimizer
 An article is an introduction to Microsoft SQL Server's plan optimizer & common operators, and provide an more in-depth view & analysis of slow queries (with example)
 
-_note: I don't provide sample data here as it's private & pretty huge, but even if you don't run these data yourself, you should have a pretty good grasp of 
-SQL Server's optimizer after reading this_
+__*Disclaimer: as MSSQL is a closed-source database, I can not prove that this article is 100% correct, all is based on articles online (which I'll include links) and my own experience, so take it with a grain of salt & happy reading!*__
+
+Note: I don't provide sample data here as it's private & pretty huge, but even if you don't run these data yourself, you should have a pretty good grasp of 
+SQL Server's optimizer after reading this
 
 Tool: Microsoft Sql Server Management Tool (MSSM)
 
@@ -520,3 +522,9 @@ __Why?__
 In _merge_, the order-preserving exchange operator has to run sequentially to get pages from the scan, so at this point it is actually running in _single thread_ mode, and when the CPU is under pressure, it’ll have to wait upto 4ms (a _quantum_, see [SQLOS](https://blog.sqlauthority.com/2015/11/11/sql-server-what-is-sql-server-operating-system/)) to get the next batch of pages
 
 In _hash_, at no point the execution is done syncronously, parallel execution is used at 100% power, so it is very effective
+
+#### TODO
+- Gather streams
+- Distribute streams
+- Spools
+- Windows functions
