@@ -40,12 +40,12 @@ They can differ in cases where the query involves parallelism, variable, hints, 
 
 <div>
     <figure style="display:inline-block;margin-left:0;width:40%;">
-        <img src="img/2021-03-01-10-03-45.png"></img>
+        <img src="img/2021-03-01-10-03-45.png">
         <figcaption style="font-size:80%;font-style:italic;">Estimated</figcaption>
     </figure>
     vs
     <figure style="display:inline-block;width:40%;">
-        <img src="img/2021-03-01-10-04-03.png"></img>
+        <img src="img/2021-03-01-10-04-03.png">
         <figcaption style="font-size:80%;font-style:italic;">Actual</figcaption>
     </figure>
 </div>
@@ -54,10 +54,10 @@ Actual Plan also include the number of rows processed by each thread, runtime me
 
 <div>
     <figure style="display:inline-block;margin-left:0;">
-        <img src="img/2021-03-01-10-11-17.png"></img>
+        <img src="img/2021-03-01-10-11-17.png">
     </figure>
     <figure style="display:inline-block;margin-left:0;">
-        <img src="img/2021-03-01-10-11-09.png"></img>
+        <img src="img/2021-03-01-10-11-09.png">
     </figure>
 </div>
 
@@ -509,12 +509,12 @@ Merge join plan is evaludated by adding a where clause filter by date, the optim
 
 <div>
     <figure style="display:block;margin-left:0;">
-        <img src="img/2021-03-01-17-05-12.png"></img>
+        <img src="img/2021-03-01-17-05-12.png">
         <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
     </figure>
     vs
     <figure style="display:block;margin-left:0;">
-        <img src="img/2021-03-01-17-05-27.png"></img>
+        <img src="img/2021-03-01-17-05-27.png">
         <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
     </figure>
 </div>
