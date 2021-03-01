@@ -37,12 +37,12 @@ Select & run the query, the plan will be open on a new tab next to result tab
 They can differ in cases where the query involves parallelism, variable, hints, current CPU usage… Actual execution plan contains extra runtime information, such as the actual usage metrics (memory grant, actual rows, executions…), and any runtime warnings
 
 <div>
-    <figure style="display:inline-block;margin-left:0;">
+    <figure style="display:inline-block;margin-left:0;width:40%;">
         <img src="img/2021-03-01-10-03-45.png"></img>
         <figcaption style="font-size:80%;font-style:italic;">Estimated</figcaption>
     </figure>
     vs
-    <figure style="display:inline-block;">
+    <figure style="display:inline-block;width:40%;">
         <img src="img/2021-03-01-10-04-03.png"></img>
         <figcaption style="font-size:80%;font-style:italic;">Actual</figcaption>
     </figure>
@@ -54,7 +54,7 @@ Actual Plan also include the number of rows processed by each thread, runtime me
     <figure style="display:inline-block;margin-left:0;">
         <img src="img/2021-03-01-10-11-17.png"></img>
     </figure>
-    <figure style="display:inline-block;">
+    <figure style="display:inline-block;margin-left:0;">
         <img src="img/2021-03-01-10-11-09.png"></img>
     </figure>
 </div>
@@ -300,7 +300,7 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
 [Source](https://bertwagner.com/posts/visualizing-nested-loops-joins-and-understanding-their-implications/)
 
 <div>
-    <span style="display:inline-block;width:500px;">
+    <span style="display:inline-block;width:30%;">
         <ul>
             <li>O(n.m) / <i>O(nlog(m))</i>*</li>
             <li>Require data sorted: No</li>
@@ -374,7 +374,7 @@ Example plan:
 [Source](https://bertwagner.com/posts/hash-match-join-internals/)
 
 <div>
-    <span style="display:inline-block;width:500px;">
+    <span style="display:inline-block;width:30%;">
         <ul>
             <li>O(n + m)</li>
             <li>Require data sorted: No</li>
@@ -403,7 +403,7 @@ Example plan:
 [Source](https://bertwagner.com/posts/visualizing-merge-join-internals-and-understanding-their-implications/)
 
 <div>
-    <span style="display:inline-block;width:500px;">
+    <span style="display:inline-block;width:30%;">
         <ul>
             <li>O(n + m)</li>
             <li>Require data sorted: <b>Yes</b></li>
@@ -494,18 +494,18 @@ group by f.custid, d.Week
 Merge join plan is evaludated by adding a where clause filter by date, the optimizer will now go for _index seek_ in the `DimDate` table, but `2020-01-01` is way lower than the actual data range in `Fact` table, so both queries produce same result
 
 <div>
-    <figure style="display:inline-block;margin-left:0;">
+    <figure style="display:block;margin-left:0;">
         <img src="img/2021-03-01-17-05-12.png"></img>
         <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
     </figure>
     vs
-    <figure style="display:inline-block;">
+    <figure style="display:block;margin-left:0;">
         <img src="img/2021-03-01-17-05-27.png"></img>
         <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
     </figure>
 </div>
 
-Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost comprared to the _hash join_ one
+Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost comprared to the _hash join_ one
 
 <blockquote style="font-size:80%">
     We can keep track of these symptoms by monitoring the CXPACKET & SLEEP_TASK wait types (for SQL Server 2008)
