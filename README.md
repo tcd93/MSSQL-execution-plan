@@ -568,8 +568,58 @@ __SQLOS__
 
 We've only touched the surface of _SQLOS_ - a operating system sitting between SQL Server & real OS to manage services such as thread, memory. There's a lot of interesting thing going on behind the scene, I'll write up another article for this at another time
 
+#### Gather streams
+Consider the SQL:
+```sql
+--get all "above-average" transactions by products
+select prod_id, tran_date, amount, avg_amount
+	from (
+		select prod_id, custid, tran_date, amount, 
+			avg(amount) over (partition by prod_id) avg_amount
+		from tnx_table
+		where tran_date between ... and ...
+	) i
+where stake >= avg_stake
+order by prod_id
+```
+
+![](img/2021-03-02-11-45-55.png)
+
+<span style="font-size:70%">This is the last part of the plan</br></span>
+![](img/2021-03-02-09-45-13.png)
+
+In this example, lots of _exchange spill events_ are caught
+
+An [exchange spill](https://www.erikdarlingdata.com/sql-server/spills-week-exchange-spill-excruciation/#:~:text=The%20Exchange%20Spill%20event%20class,plan%20has%20multiple%20range%20scans%E2%80%A6) is like a [tempdb spill](####-tempdb-spill), it is a buffer overflow event that happens inside of a thread
+
+Here's a [visualized version](https://forrestmcdaniel.com/2019/09/30/grokking-the-paul-white-parallel-deadlock-demo/) of the above plan:
+
+<img src="https://i2.wp.com/forrestmcdaniel.com/wp-content/uploads/2019/09/Parallel-Deadlock.gif?resize=350%2C220&ssl=1">
+
+Because of the uneven distribution of data in threads (_skewed data_), the ones that have more rows (1 & 4) are more likely to wait for thread 2 & 3 to keep returned rows in order, while piling up their internal buffer, eventually leading to a spill
+
+To fix this, we need to eliminate the _skewness_ by spliting up data into two parts:
+```sql
+with [avg] as (
+	select prod_id, avg(amount) amount, min(tran_date) min_tdate, max(tran_date) max_tdate
+	from tnx_table
+	where tran_date between ... and ...
+	group by prod_id
+)
+select a.prod_id, a.tran_date, a.amount, [avg].amount avg_amount
+from tnx_table a
+inner join [avg]
+on a.amount >= [avg].amount
+	and a.prod_id = [avg].prod_id
+	and a.tran_date between [avg].min_tdate and [avg].max_tdate
+order by prod_id
+```
+
+Now it executes instantly:
+
+![](img/2021-03-02-12-19-42.png)
+
 #### TODO
-- Gather streams
 - Distribute streams
 - Spools
 - Windows functions
