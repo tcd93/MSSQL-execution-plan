@@ -534,7 +534,7 @@ Merge join plan is evaludated by adding a where clause filter by date, the optim
     </figure>
 </div>
 
-Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost comprared to the _hash join_ one
+Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost compared to the _hash join_ one
 
 <blockquote style="font-size:85%">
     We can keep track of these symptoms by monitoring the CXPACKET & SLEEP_TASK wait types (for SQL Server 2008)
@@ -547,12 +547,12 @@ In normal circumstances, both queries' performance is very similar (around 5s fo
 Now, put the system CPU under load (by running many queries at same time using __SQL Stress Test__), the _merge join_ becomes slower the more threads used, whereas _hash join_'s performance is very consistent (when CPU at 90% load, _merge_ took 13s)
 
 <div>
-    <figure style="display:inline-block;margin-left:0;width:45%;">
+    <figure style="display:inline-block;margin-left:0;width:40%;">
         <img src="img/2021-03-02-08-53-17.png">
         <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
     </figure>
     vs
-    <figure style="display:inline-block;margin-left:0;width:45%;">
+    <figure style="display:inline-block;margin-left:0;width:40%;">
         <img src="img/2021-03-02-08-52-07.png">
         <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
     </figure>
@@ -585,7 +585,7 @@ order by prod_id
 
 ![](img/2021-03-02-11-45-55.png)
 
-<span style="font-size:70%">This is the last part of the plan</br></span>
+<span style="font-size:70%">This is the last part of the plan</span></br>
 ![](img/2021-03-02-09-45-13.png)
 
 In this example, lots of _exchange spill events_ are caught
