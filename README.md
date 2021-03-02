@@ -264,14 +264,17 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
         <td>
         
 [Hash match/aggregate](####-hash-match)      
-        </td>
+        
+</td>
         <td>Builds a hash table from its first input, then uses that hash table to either join to its second input, or produce aggregated values</td>
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-54-32.png" style="width:50px;height:50px;"/></td>
         <td>
+
 [Merge join](####-merge-join)
-        </td>
+
+</td>
         <td>Joins two inputs that are ordered by the join key(s), exploiting the known sort order for optimal processing efficiency</td>
     </tr>
     <tr>
@@ -284,7 +287,8 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
         <td>
 
 [Nested loop](####-nested-loop)
-        </td>
+
+</td>
         <td>Joins two inputs by repeatedly executing the second input for each row in the first input</td>
     </tr>
 </table>
@@ -298,19 +302,27 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-15-01-35.png" style="width:50px;height:50px;"/></td>
-        <td>Distribute streams</td>
+        <td>
+        
+[Distribute streams](####-distribute-streams)
+        
+</td>
         <td rowspan="3">The parallelism operators, also known as exchange operators, manage the distribution of rows between threads in parallel plans</td>
     </tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-20.png" style="width:50px;height:50px;"/></td>
         <td>
         
-[Repartition streams](####-making-sense-of-parallel-scan)</td>
-        </tr>
+[Repartition streams](####-making-sense-of-parallel-scan)
+
+</td></tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-50.png" style="width:50px;height:50px;"/></td>
-        <td>Gather streams</td>
-    </tr>
+        <td>
+        
+[Gather streams](####-gather-streams)
+
+</td></tr>
 </table>
 
 ---
@@ -618,6 +630,10 @@ order by prod_id
 Now it executes instantly:
 
 ![](img/2021-03-02-12-19-42.png)
+
+Keep in mind that _exchange spill_ can happen with any __blocking__ operator:
+
+![](img/2021-03-02-12-56-39.png)
 
 #### TODO
 - Distribute streams
