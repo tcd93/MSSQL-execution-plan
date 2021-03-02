@@ -240,7 +240,10 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     <tr>
         <td><img src="img/2021-03-01-14-26-54.png" style="width:50px;height:50px;"/></td>
         <td>Key lookup</td>
-        <td>Reads a single row from a clustered index, based on a key value that was retrieved from a non-clustered index on the same table. A Key lookup is a very expensive operation because it performs a random I/O into the clustered index. For every row of the non-clustered index, SQL Server has to go to the Clustered Index to read their data. We can take advantage of knowing this to improve the query performance</td>
+        <td>Reads a single row from a clustered index, based on a key that was retrieved from a non-clustered index on the same table.</br>
+        A Key lookup is a very expensive operation because it performs random I/O into the clustered index.</br>
+        For every row of the non-clustered index, SQL Server has to go to the Clustered Index to read their data.</br>
+        We can take advantage of knowing this to improve the query performance</td>
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-27-28.png" style="width:50px;height:50px;"/></td>
@@ -383,7 +386,7 @@ Example plan:
 
 <ul>
     <li>Although getting just 10 rows, the above plan still requires 189,312 KB of sorting space</li>
-    <li>Concurrent runs of above query cause high _RESOURCE_SEMAPHORE_ wait, leading to slower performance (fixed in 2016)</li>
+    <li>Concurrent runs of above query cause high <b>RESOURCE_SEMAPHORE</b> wait, leading to slower performance (fixed in 2016)</li>
     <li>The sort method & memory grant algorithm is different to a normal sort operator, there’s no guarantee that it is faster than same query without optimization</li>
     <li>This is treated as a “safety net” in case the statistics are out-of-date</li>
 </ul>
@@ -480,9 +483,11 @@ With bitmap, the actual number of rows after the scan is reduced
 
 With the two sources ready & optimized, the Hash join operation can be done quickly in parallel and finally merged together
 
-Here's a summary (_note that `mod % 2` & `mod % 10` are not actual MS hash function implementation, this is for demontrastion purpose only_):
+Here's a summary chart (_note that `mod % 2` & `mod % 10` are not actual MS hash function implementation_):
 
 <img src="img/2021-03-01-16-40-37.png" style="background:white"/>
+
+In this example, values in thread 1 & 2 pass through the `bloom filter` (with hash function `mod % 10`) and only 7 bits is turned on, when thread 3 & 4 come and look up on the bitmask, any value which divided by 10 returns a remainder of 1, 6 or 9 would get filtered, these are the _false negative_ matches. The rest, continue on and be filtered again by the _hash match_ function, with much less need for memory
 
 <blockquote style="font-size:85%">
 
@@ -507,7 +512,7 @@ This is a side-by-side comparation of a merge join & hash join, both produce sam
 The query is simple:
 ```sql
 --hash
-select f.custid, d.Week, sum(f.ActualStake) 
+select f.custid, d.Week, sum(f.Amount) 
 from Fact f
 inner join DimDate d
 on f.RptDate = d.PK_Date
@@ -537,13 +542,31 @@ Since the _index seek_ generate an ordered result set, optimizer tries to make u
 
 **Where the fun begins**
 
-Now, put the system CPU under load (by running many queries at same time using __SQL Stress Test__), the _merge join_ becomes slower the more threads used, whereas _hash join_'s performance is very consistent
+In normal circumstances, both queries' performance is very similar (around 5s for 200k records)
+
+Now, put the system CPU under load (by running many queries at same time using __SQL Stress Test__), the _merge join_ becomes slower the more threads used, whereas _hash join_'s performance is very consistent (when CPU at 90% load, _merge_ took 13s)
+
+<div>
+    <figure style="display:inline-block;margin-left:0;width:45%;">
+        <img src="img/2021-03-02-08-53-17.png">
+        <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
+    </figure>
+    vs
+    <figure style="display:inline-block;margin-left:0;width:45%;">
+        <img src="img/2021-03-02-08-52-07.png">
+        <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
+    </figure>
+</div>
 
 __Why?__ 
 
 In _merge_, the order-preserving exchange operator has to run sequentially to get pages from the scan, so at this point it is actually running in _single thread_ mode, and when the CPU is under pressure, it’ll have to wait upto 4ms (a _quantum_, see [SQLOS](https://blog.sqlauthority.com/2015/11/11/sql-server-what-is-sql-server-operating-system/)) to get the next batch of pages
 
 In _hash_, at no point the execution is done syncronously, parallel execution is used at 100% power, so it is very effective
+
+__SQLOS__
+
+We've only touched the surface of _SQLOS_ - a operating system sitting between SQL Server & real OS to manage services such as thread, memory. There's a lot of interesting thing going on behind the scene, I'll write up another article for this at another time
 
 #### TODO
 - Gather streams
