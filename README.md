@@ -240,9 +240,9 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     <tr>
         <td><img src="img/2021-03-01-14-26-54.png" style="width:50px;height:50px;"/></td>
         <td>Key lookup</td>
-        <td>Reads a single row from a clustered index, based on a key that was retrieved from a non-clustered index on the same table.</br>
-        A Key lookup is a very expensive operation because it performs random I/O into the clustered index.</br>
-        For every row of the non-clustered index, SQL Server has to go to the Clustered Index to read their data.</br>
+        <td>Reads a single row from a clustered index, based on a key that was retrieved from a non-clustered index on the same table.<br>
+        A Key lookup is a very expensive operation because it performs random I/O into the clustered index.<br>
+        For every row of the non-clustered index, SQL Server has to go to the Clustered Index to read their data.<br>
         We can take advantage of knowing this to improve the query performance</td>
     </tr>
     <tr>
@@ -585,7 +585,7 @@ order by prod_id
 
 ![](img/2021-03-02-11-45-55.png)
 
-<span style="font-size:70%">This is the last part of the plan</span></br>
+<span style="font-size:70%">This is the last part of the plan</span><br>
 ![](img/2021-03-02-09-45-13.png)
 
 In this example, lots of _exchange spill events_ are caught
