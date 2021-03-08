@@ -641,7 +641,16 @@ Keep in mind that _exchange spill_ can happen with any __blocking__ operator:
 
 ![](img/2021-03-02-12-56-39.png)
 
+#### Distribute streams
+![](img/2021-03-08-15-42-57.png)
+
+Distribute rows from a single-threaded operation across multiple threads
+
+Common types:
+- Hash (for Hash join)
+- Round-Robin (for Nested Loop join)
+- Broadcast (for small set of input)
+
 #### TODO
-- Distribute streams
 - Spools
 - Windows functions
