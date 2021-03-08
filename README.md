@@ -21,7 +21,7 @@ Tool: Microsoft SQL Server Management Tool (MSSM)
         - [Nested loop](#nested-loop)
         - [Hash join](#hash-join)
         - [Merge join](#merge-join)
-    - [Making sense of parallelism & Why merge join is slower than hash join?](#-making-sense-of-parallel-scan)
+    - [Making sense of parallelism & Why merge join is slower than hash join?](#making-sense-of-parallel-scan)
 
 ---
 
