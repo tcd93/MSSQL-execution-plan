@@ -11,6 +11,19 @@ SQL Server's optimizer after reading this
 Tool: Microsoft SQL Server Management Tool (MSSM)
 
 ---
+# Table of contents
+- [Execution Plan & Optimizer](##-execution-plan-&-optimizer)
+- [Query Processor](##-query-processor)
+- [Statistics](##-statistics)
+    - [B-tree index](##-a-little-about-btree-index)
+- [Common Operators](##-common-operators)
+    - [Joins/aggregator](###-joins--aggregator)
+        - [Nested loop](####-nested-loop)
+        - [Hash join](####-hash-join)
+        - [Merge join](####-merge-join)
+    - [Making sense of parallelism & Why merge join is slower than hash join?](####-making-sense-of-parallel-scan)
+
+---
 
 ## Execution Plan & Optimizer
 ### What is an Execution Plan?
