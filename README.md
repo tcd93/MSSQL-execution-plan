@@ -8,7 +8,7 @@ __*Disclaimer: as MSSQL is a closed-source database, I can not prove that this a
 Note: I don't provide sample data here as it's private & pretty huge, but even if you don't run these data yourself, you should have a pretty good grasp of 
 SQL Server's optimizer after reading this
 
-Tool: Microsoft Sql Server Management Tool (MSSM)
+Tool: Microsoft SQL Server Management Tool (MSSM)
 
 ---
 
@@ -69,9 +69,9 @@ What happens when a query is submitted?
 
 <img style="background:white" src="img/2021-03-01-10-18-10.png"/>
 
-The algebrizer resolves all the names of various objects, tables, and columns referred to within the query string. It identifies at the individual column level, all the data types (varchar, datetime…) for the objects being accessed. It also determines the location of aggregates (SUM, MAX…)
+The `algebrizer` resolves all the names of various objects, tables, and columns referred to within the query string. It identifies at the individual column level, all the data types (varchar, datetime…) for the objects being accessed. It also determines the location of aggregates (SUM, MAX…)
 
-The algebrizer outputs a binary tree which gives the optimizer knowledge of the logical query structure and the underlying tables and indexes, the output also includes a hash representing the query, the optimizer uses it to see if there is already a plan for this stored in plan cache & whether it’s still valid, if there’s one, then the process stops and __the cached plan is reused__, if not, then it'll compile out an execution plan based on __*statistics*__ & __*cost*__
+The `algebrizer` outputs a binary tree which gives the optimizer knowledge of the logical query structure and the underlying tables and indexes, the output also includes a hash representing the query, the optimizer uses it to see if there is already a plan for this stored in plan cache & whether it’s still valid, if there’s one, then the process stops and __the cached plan is reused__, if not, then it'll compile out an execution plan based on __*statistics*__ & __*cost*__
 
 Once the query is optimized, the generated execution plan may be stored in the plan cache and be executed step-by-step by the physical operators in that plan
 
@@ -116,7 +116,7 @@ The maximum number of bucket is 200, this can cause problems for larger set of d
 
 <blockquote style="font-size:85%">
 
-For example, customer A usually makes 5 purchases per week, but suddenly, at a special day (like Black Friday), he made over 10000 transactions, that huge spike might not get captured in the transaction bucket, and the query for that week would likely get much slower than normal as the optimizer'd still think he makes 
+For example, customer A usually makes 5 purchases per week, but suddenly, at a special day (like Black Friday), he made over 10000 transactions, that huge spike might not get captured in the transaction bucket, and the query for that week would likely get much slower than normal as the `optimizer`'d still think he makes 
 very little purchases in that week
 
 </blockquote>
@@ -158,18 +158,18 @@ SELECT * FROM Customer WHERE MasterID = @N
 
 ![](img/2021-03-01-13-44-53.png)
 
-_Histogram cannot be used when we're using paramater_, it then falls back to Density, which is estimated as `Total rows * Density` = `1357786 * 2.020488E-05` = `27.43` rows - but in actualality there is 2134 rows! (as showed in Histogram `EQ_ROWS` attribute). Optimizer failed pretty hard there 🤔
+_Histogram cannot be used when we're using parameter_, it then falls back to Density, which is estimated as `Total rows * Density` = `1357786 * 2.020488E-05` = `27.43` rows - but in actuality there is 2134 rows! (as showed in Histogram `EQ_ROWS` attribute). Optimizer failed pretty hard there 🤔
 
 ### Memory Grant
 - Memory Grant value (kb) can only be seen in Actual execution mode
 - This memory is used to store temporary rows for sort, hash join & [parallelism exchange operators](###-parallelism-operators)
-- SQL Server calculates this based on statistics, lack of available memory grant causes a tempdb spill ([tempDB](https://docs.microsoft.com/en-us/sql/relational-databases/databases/tempdb-database?view=sql-server-ver15) is a global resource that is used to stores all temporary objects)
+- SQL Server calculates this based on statistics, lack of available memory grant causes a `tempdb` spill ([tempDB](https://docs.microsoft.com/en-us/sql/relational-databases/databases/tempdb-database?view=sql-server-ver15) is a global resource that is used to stores all temporary objects)
 
 <blockquote style="font-size:85%">
 
 In SQL server 2012+, a yellow warning icon is displayed in plan explorer when the processor detects a spill (not enough RAM to store data)
 
-For SQL server 2008R2, check the “sort warnings” event in <a href="https://www.sqlshack.com/an-overview-of-the-sql-server-profiler/">SQL profiler</a> to detect memory spil
+For SQL server 2008R2, check the “sort warnings” event in <a href="https://www.sqlshack.com/an-overview-of-the-sql-server-profiler/">SQL profiler</a> to detect memory spill
 
 </blockquote>
 
@@ -180,7 +180,7 @@ By adding a “order by” clause to the above example, we can produce a _sort w
 
 ![](img/2021-03-01-14-03-49.png)
 
-The engine only granted 1136 Kb of memory buffer to perform sorting, but in reality the operation needed way more because actual rows are much higher than estimated returned rows, so the input data has to be split into smaller chunks in _tempDB_ to accommodate the granted space to be sorted, then extra passes are performed to merge these sorted chunks
+The engine only granted 1136 KB of memory buffer to perform sorting, but in reality the operation needed way more because actual rows are much higher than estimated returned rows, so the input data has to be split into smaller chunks in _tempDB_ to accommodate the granted space to be sorted, then extra passes are performed to merge these sorted chunks
 
 To fix this, we can simply add the __RECOMPILE__ hint to the query, this forces the parse to replace the `@N` parameter with actual value, therefore correctly using the Histogram table
 
@@ -189,7 +189,7 @@ To fix this, we can simply add the __RECOMPILE__ hint to the query, this forces 
 ## A little about B+Tree Index
 Index is a set of ordered values stored in 8kb pages, the pages form a B+tree structure, and the value contains pointer to the pages in the next level of the tree
 
-The pages at the leaf nodes can be data pages (clustered index) or index pages (nonclustered index)
+The pages at the leaf nodes can be data pages (clustered index) or index pages (non-clustered index)
 
 Clustered index (CI) is the table itself, 1 table can only have 1 CI; NonCI’s leaf may refer to the CI’s key, so _any changes to the CI’s key will force changes to every NonCI’s structures_
 
@@ -337,7 +337,7 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
             <li>Require data sorted: No</li>
             <li>CPU cost: Low</li>
             <li>Memory grant: Maybe</li>
-            <li>Spillable: No</li>
+            <li>Spill-able?: No</li>
             <li>Blocking: No / <i>Semi</i>**</li>
             <li>
                 Optimal for:
@@ -379,7 +379,7 @@ Scans `IX_agent` index, for each agent, seek the corresponding customer __asynch
 
 <blockquote style="font-size:85%">
 
-When <code>WithUnorderedPrefetch</code> is set to False, the seeked result will be forwarded only when the previous ordered key is fetched & forwarded
+When <code>WithUnorderedPrefetch</code> is set to False, the index-seek-result result will be forwarded only when the previous ordered key is fetched & forwarded
 
 </blockquote>
 
@@ -415,7 +415,7 @@ Example plan:
             <li>Require data sorted: No</li>
             <li>CPU cost: High</li>
             <li>Memory grant: <b>Yes</b></li>
-            <li>Spillable: Yes</li>
+            <li>Spill-able?: Yes</li>
             <li>Blocking: Yes</li>
             <li>
                 Optimal for:
@@ -444,7 +444,7 @@ Example plan:
             <li>Require data sorted: <b>Yes</b></li>
             <li>CPU cost: Low</li>
             <li>Memory grant: No</li>
-            <li>Spillable: No</li>
+            <li>Spill-able?: No</li>
             <li>Blocking: No</li>
             <li>
                 Optimal for:
@@ -465,7 +465,7 @@ Example plan:
 
 #### Making sense of parallel scan
 
-This is the explan plan produced from the following query:
+This is the explain plan produced from the following query:
 ```sql
 SELECT [product].id, [tnx_table].amount...
 FROM tnx_table
@@ -532,7 +532,7 @@ on f.RptDate = d.PK_Date
 group by f.custid, d.Week
 ```
 
-Merge join plan is evaludated by adding a where clause filter by date, the optimizer will now go for _index seek_ in the `DimDate` table, but `2020-01-01` is way lower than the actual data range in `Fact` table, so both queries produce same result
+Merge join plan is evaluated by adding a where clause filter by date, the optimizer will now go for _index seek_ in the `DimDate` table, but `2020-01-01` is way lower than the actual data range in `Fact` table, so both queries produce same result
 
 <div>
     <figure style="display:block;margin-left:0;">
@@ -572,9 +572,9 @@ Now, put the system CPU under load (by running many queries at same time using _
 
 __Why?__ 
 
-In _merge_, the order-preserving exchange operator has to run sequentially to get pages from the scan, so at this point it is actually running in _single thread_ mode, and when the CPU is under pressure, it’ll have to wait upto 4ms (a _quantum_, see [SQLOS](https://blog.sqlauthority.com/2015/11/11/sql-server-what-is-sql-server-operating-system/)) to get the next batch of pages
+In _merge_, the order-preserving exchange operator has to run sequentially to get pages from the scan, so at this point it is actually running in _single thread_ mode, and when the CPU is under pressure, it’ll have to wait up to 4ms (a _quantum_, see [SQLOS](https://blog.sqlauthority.com/2015/11/11/sql-server-what-is-sql-server-operating-system/)) to get the next batch of pages
 
-In _hash_, at no point the execution is done syncronously, parallel execution is used at 100% power, so it is very effective
+In _hash_, at no point the execution is done synchronously, parallel execution is used at 100% power, so it is very effective
 
 __SQLOS__
 
@@ -595,6 +595,12 @@ where stake >= avg_stake
 order by prod_id
 ```
 
+<span style="font-size:120%;font-weight:bold">
+
+Execution time is 8 seconds, but with threading disabled (by adding `option (maxdop 1)`), execution time drops to 1 second
+
+</span>
+
 ![](img/2021-03-02-11-45-55.png)
 
 <span style="font-size:70%">This is the last part of the plan</span><br>
@@ -602,7 +608,7 @@ order by prod_id
 
 In this example, lots of _exchange spill events_ are caught
 
-An [exchange spill](https://www.erikdarlingdata.com/sql-server/spills-week-exchange-spill-excruciation/#:~:text=The%20Exchange%20Spill%20event%20class,plan%20has%20multiple%20range%20scans%E2%80%A6) is like a [tempdb spill](####-tempdb-spill), it is a buffer overflow event that happens inside of a thread
+An [exchange spill](https://www.erikdarlingdata.com/sql-server/spills-week-exchange-spill-excruciation/#:~:text=The%20Exchange%20Spill%20event%20class,plan%20has%20multiple%20range%20scans%E2%80%A6) is like a [`tempdb` spill](####-tempdb-spill), it is a buffer overflow event that happens inside of a thread
 
 Here's a [visualized version](https://forrestmcdaniel.com/2019/09/30/grokking-the-paul-white-parallel-deadlock-demo/) of the above plan:
 
@@ -610,7 +616,7 @@ Here's a [visualized version](https://forrestmcdaniel.com/2019/09/30/grokking-th
 
 Because of the uneven distribution of data in threads (_skewed data_), the ones that have more rows (1 & 4) are more likely to wait for thread 2 & 3 to keep returned rows in order, while piling up their internal buffer, eventually leading to a spill
 
-To fix this, we need to eliminate the _skewness_ by spliting up data into two parts:
+To fix this, we need to eliminate the _skewness_ by splitting up data into two parts:
 ```sql
 with [avg] as (
 	select prod_id, avg(amount) amount, min(tran_date) min_tdate, max(tran_date) max_tdate
