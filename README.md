@@ -325,6 +325,25 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
 </td></tr>
 </table>
 
+### Spools
+<table>
+    <tr>
+        <th>Icon</th>
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><img src="img/2021-03-08-15-45-59.png" style="width:50px;height:50px;"/></td>
+        <td>Table spool</td>
+        <td>Stores its input rows in an internal worktable; this worktable can then be used to re-process the same data</td>
+    </tr>
+    <tr>
+        <td><img src="img/2021-03-08-15-46-39.png" style="width:50px;height:50px;"/></td>
+        <td>Index spool</td>
+        <td>Stores its input rows in an internal, indexed worktable; this indexed worktable can then be used to re-process specific subsets of the data</td>
+    </tr>
+</table>
+
 ---
 
 #### Nested loop
@@ -651,6 +670,48 @@ Common types:
 - Round-Robin (for Nested Loop join)
 - Broadcast (for small set of input)
 
-#### TODO
-- Spools
-- Windows functions
+#### Spools
+A spool is created when the optimizer thinks that data reuse is important (prevent multiple seeks or scans on same index/heap)
+
+_There are two types of spool: lazy & eager_
+
+- Eager Spool catches all the rows received from another operator (ex: Index scan, concatenation...) and store these rows in TempDB (blocking)
+
+- Lazy Spool is similar to eager spool, but it only reads and stores the rows in a temporary table only when the parent operator actually asks for a row (non-blocking)
+
+**Lazy Spool**
+
+We're using the previous plan example of _gather streams_, without parallelism
+
+![](img/2021-03-08-15-52-01.png)
+
+We’ll see that there are 3 lazy spool operators, but it is actually just one instance (by hovering on it, they have the same primary node id)
+
+The data flow goes as below:
+
+1. The operator scan the transaction table to continuously retrieve all data
+2. Once a segment got all records of a same customer, it copies all rows into a table spool, those rows are then used as the outer input of a nested loop _(1)_
+3. For each loop _(1)_, it scan the entire spool, calculate the average transaction amount of that customer (aggregate), the result is a single row that get passed as outer input into another nested loop _(2)_
+4. The processor scan the spool again, row-by-row to compare with the number from step 3, returning rows that are less than that number
+5. When the index scan is done for another batch of customer rows, the spool is truncated and refill with new data, repeat until all customers are done
+
+![](img/2021-03-08-15-55-09.png)
+
+<blockquote style="font-size:85%">
+
+The number of customers in the transaction table is 19758
+
+The spool is rebound 19759 times meaning it got truncated & repopulated 19758 times for each customer + 1 time on the first creation
+
+</blockquote>
+
+**Eager Spool**
+
+QUERY: Add 100 to all `MasterID`s in the customer table
+
+![](img/2021-03-08-15-58-48.png)
+
+Due to MasterID being key in a non-clustered index (IX_master), updating it will physically change it’s location (move towards the right end of the b-tree), if the scan operation is from left to right, then the updated row might be reread & updated again
+
+The eager spool is created to temporary store old rows, making sure that each row is read only once
+
