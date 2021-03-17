@@ -21,7 +21,8 @@ Tool: Microsoft SQL Server Management Tool (MSSM)
         - [Nested loop](#nested-loop)
         - [Hash join](#hash-join)
         - [Merge join](#merge-join)
-    - [Making sense of parallelism & Why merge join is slower than hash join?](#making-sense-of-parallel-scan)
+    - [Making sense of parallelism](#making-sense-of-parallel-scan)
+    - [Why merge is slower than hash in parallel](#comparing-merge--hash-in-parallel-plans)
 
 ---
 
@@ -274,11 +275,7 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-53-57.png" style="width:50px;height:50px;"/></td>
-        <td>
-        
-[Hash match/aggregate](####-hash-match)      
-        
-</td>
+        <td>Hash match/aggregate</td>
         <td>Builds a hash table from its first input, then uses that hash table to either join to its second input, or produce aggregated values</td>
     </tr>
     <tr>
@@ -297,11 +294,7 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-14-55-55.png" style="width:50px;height:50px;"/></td>
-        <td>
-
-[Nested loop](####-nested-loop)
-
-</td>
+        <td>Nested loop</td>
         <td>Joins two inputs by repeatedly executing the second input for each row in the first input</td>
     </tr>
 </table>
@@ -315,27 +308,17 @@ If the data is too big for granted memory, a [spill](####-tempdb-spill) happens,
     </tr>
     <tr>
         <td><img src="img/2021-03-01-15-01-35.png" style="width:50px;height:50px;"/></td>
-        <td>
-        
-[Distribute streams](####-distribute-streams)
-        
-</td>
+        <td>Distribute streams</td>
         <td rowspan="3">The parallelism operators, also known as exchange operators, manage the distribution of rows between threads in parallel plans</td>
     </tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-20.png" style="width:50px;height:50px;"/></td>
-        <td>
-        
-[Repartition streams](####-making-sense-of-parallel-scan)
-
-</td></tr>
+        <td>Repartition streams</td>
+    </tr>
     <tr>
         <td><img src="img/2021-03-01-15-02-50.png" style="width:50px;height:50px;"/></td>
-        <td>
-        
-[Gather streams](####-gather-streams)
-
-</td></tr>
+        <td>Gather streams</td>
+    </tr>
 </table>
 
 ### Spools
@@ -628,10 +611,9 @@ order by prod_id
 ```
 
 <span style="font-size:120%;font-weight:bold">
+Execution time is 8 seconds, but with threading disabled (by adding <code>option (maxdop 1)</code>), execution time drops to 1 second
+</span><br><br>
 
-Execution time is 8 seconds, but with threading disabled (by adding `option (maxdop 1)`), execution time drops to 1 second
-
-</span>
 
 ![](img/2021-03-02-11-45-55.png)
 
