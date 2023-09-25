@@ -22,7 +22,7 @@ title: MSSQL's Execution Plan
 # email: your-email@example.com
 description: >- # this means to ignore newlines until "baseurl:"
   SQL Server's execution plan and troubleshooting common cause of slow queries
-baseurl: /mssql-execution-plan # the subpath of your site, e.g. /blog
+# baseurl: /mssql-execution-plan # the subpath of your site, e.g. /blog
 domain: tcd93.github.io
 url: https://tcd93.github.io # the base hostname & protocol for your site, e.g. http://example.com
 # twitter_username: jekyllrb
