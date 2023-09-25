@@ -1,5 +1,5 @@
 # MSSQL Plan Optimizer
-An article is an introduction to Microsoft SQL Server's plan optimizer & common operators, and provide an more in-depth view & analysis of slow queries (with example)
+An article is an introduction to Microsoft SQL Server's plan optimizer & common operators, and provide an more in-depth view & analysis of slow queries (with example). __All the queries here are executed in Row-mode.__
 
 Link: https://tcd93.github.io/MSSQL-execution-plan/
 
