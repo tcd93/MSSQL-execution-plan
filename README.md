@@ -561,13 +561,13 @@ Merge join plan is evaluated by adding a where clause filter by date, the optimi
     </figure>
 </div>
 
-Since the _index seek_ generate an ordered result set, optimizer tries to make use of an _merge join_ plan, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost compared to the _hash join_ one
+Since the _index seek_ from the Merge plan generate an ordered result set, optimizer tries to make use of _merge join_, but data from `Fact` table's _clustered index scan_ are not yet ordered, the engine must do it implicitly in the _ordered repartition streams_ operator, thus giving very high cost compared to the _hash join_ one
 
 <blockquote style="font-size:85%">
     We can keep track of these symptoms by monitoring the CXPACKET & SLEEP_TASK wait types (for SQL Server 2008)
 </blockquote>
 
-**Where the fun begins**
+**Merge isn't always good**
 
 In normal circumstances, both queries' performance is very similar (around 5s for 200k records)
 
@@ -576,12 +576,12 @@ Now, put the system CPU under load (by running many queries at same time using _
 <div>
     <figure style="display:inline-block;margin-left:0;width:40%;">
         <img src="img/2021-03-02-08-53-17.png">
-        <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
+        <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
     </figure>
     vs
     <figure style="display:inline-block;margin-left:0;width:40%;">
         <img src="img/2021-03-02-08-52-07.png">
-        <figcaption style="font-size:80%;font-style:italic;">Hash</figcaption>
+        <figcaption style="font-size:80%;font-style:italic;">Merge</figcaption>
     </figure>
 </div>
 
